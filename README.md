@@ -5,7 +5,8 @@
 </p>
 
 <p align="center">
-  <img alt="Python" src="https://img.shields.io/badge/python-3.10+-blue.svg">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.12-blue.svg">
+  <img alt="Poetry" src="https://img.shields.io/badge/deps-Poetry-60a5fa.svg">
   <img alt="LLM" src="https://img.shields.io/badge/LLM-Groq%20%7C%20Ollama-8e24aa.svg">
   <img alt="Cost" src="https://img.shields.io/badge/cost-~%240%2Fmonth-2e7d32.svg">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg">
@@ -58,6 +59,7 @@ feed reader.
 - **LLM:** Groq / Ollama behind one swappable provider
 - **UI & config:** Streamlit · PyYAML
 - **Scheduling:** Windows Task Scheduler (cron on macOS/Linux)
+- **Tooling:** Poetry (deps + virtualenv) · Python 3.12
 
 ### ✍️ Author
 
@@ -66,10 +68,12 @@ keeping up with AI shouldn't cost an hour of scrolling every day.
 
 ## ⬇️ Installation
 
-Requires **Python 3.10+**. Works on Windows, macOS, and Linux.
+Requires **Python 3.12** and **[Poetry](https://python-poetry.org/)**. Works on
+Windows, macOS, and Linux.
 
 ```powershell
-pip install -r requirements.txt
+poetry env use 3.12     # point Poetry at your Python 3.12 interpreter
+poetry install          # create the virtualenv and install all dependencies
 ```
 
 Then add a free Groq API key (get one at <https://console.groq.com/keys>) and
@@ -87,8 +91,8 @@ setx GROQ_API_KEY "gsk_your_key_here"
 Fill the backlog, then open it:
 
 ```powershell
-python main.py          # fetch → judge → store (run it any morning)
-streamlit run app.py    # browse the scored backlog
+poetry run python main.py        # fetch → judge → store (run it any morning)
+poetry run streamlit run app.py  # browse the scored backlog
 ```
 
 That's the whole loop. In the UI you filter by source/score, read each item's
@@ -99,20 +103,23 @@ All CLI commands:
 
 | Command | What it does |
 |---|---|
-| `pip install -r requirements.txt` | Install all dependencies. |
+| `poetry env use 3.12` | Bind the project's virtualenv to Python 3.12. |
+| `poetry install` | Create the virtualenv and install all dependencies. |
+| `poetry add <pkg>` | Add a new dependency (updates `pyproject.toml` + lock). |
+| `poetry run python main.py` | Run the full pipeline: fetch → dedup → triage → deep-eval. Safe to re-run; dedup prevents repeats. |
+| `poetry run streamlit run app.py` | Open the backlog UI in the browser. |
+| `poetry shell` | Drop into the virtualenv (then run `python main.py` directly). |
 | `setx GROQ_API_KEY "gsk_..."` | Store your Groq key (reopen the terminal after). |
-| `python main.py` | Run the full pipeline: fetch → dedup → triage → deep-eval. Safe to re-run; dedup prevents repeats. |
-| `streamlit run app.py` | Open the backlog UI in the browser. |
 | `ollama pull qwen3:8b` | Download the local fallback model (only if using Ollama). |
 | `ollama serve` | Start the local Ollama server (usually auto-starts). |
 | `setx OLLAMA_API_KEY "..."` | Store an Ollama Cloud key (only for `host: https://ollama.com`). |
 
 Behavior is driven entirely by `config.yaml`, `resources.yaml`, and the two prompt
-files — there are no subcommands or flags. Change a file, re-run `python main.py`.
+files — there are no subcommands or flags. Change a file, re-run the pipeline.
 
 ## ⚙️ Configure it for you
 
-Four files, all plain text — edit and re-run `python main.py`:
+Four files, all plain text — edit and re-run `poetry run python main.py`:
 
 | File | What you change |
 |---|---|
@@ -207,15 +214,23 @@ Deeper build notes live in [`private-study/`](private-study/).
 
 ## ⏰ Schedule it at 7am
 
-On Windows, use **Task Scheduler → Create Basic Task**:
+Point the task straight at the Poetry virtualenv's interpreter (more reliable
+than `poetry run` from the scheduler). First find its path:
+
+```powershell
+poetry env info --path     # e.g. C:\Users\dvall\AppData\Local\...\ai-radar-xxxx-py3.12
+```
+
+Then in **Task Scheduler → Create Basic Task**:
 
 - **Trigger:** Daily, 07:00.
-- **Action:** Start a program → `python`, arguments `main.py`, start-in
-  `c:\Users\dvall\Documents\ai-radar`.
+- **Action:** Start a program → Program/script: `<that path>\Scripts\python.exe`,
+  arguments `main.py`, start-in `c:\Users\dvall\Documents\ai-radar`.
 - In the task's properties, enable **"Run task as soon as possible after a
   scheduled start is missed"** so it catches up if the PC was asleep.
 
-(macOS/Linux: a `cron` entry like `0 7 * * * cd /path/ai-radar && python main.py`.)
+(macOS/Linux: a `cron` entry like
+`0 7 * * * cd /path/ai-radar && poetry run python main.py`.)
 
 ## 💸 Cost
 

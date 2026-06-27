@@ -1,0 +1,35 @@
+[tool.poetry]
+# This is an application, not a library: tell Poetry to manage dependencies
+# only and not try to install the project itself as a package.
+package-mode = false
+name = "ai-radar"
+version = "0.1.0"
+description = "Personal AI-news aggregator that scores and summarizes a daily backlog."
+authors = ["David Valls"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+
+# --- ingestion ---
+feedparser = "^6.0"        # RSS / Atom parsing (also the arXiv Atom API)
+trafilatura = "^2.0"       # full article text extraction
+httpx = ">=0.27,<1.0"      # API calls (arXiv, Hacker News, Reddit, Hugging Face)
+beautifulsoup4 = "^4.12"   # GitHub Trending HTML parsing
+lxml = "^5.0"              # fast parser backend for beautifulsoup4
+python-dateutil = "^2.9"   # robust date parsing across feeds
+
+# --- persistence ---
+sqlalchemy = "^2.0"        # ORM over SQLite
+
+# --- LLM providers (switchable) ---
+groq = ">=0.11,<1.0"       # Groq cloud API (primary)
+ollama = ">=0.3,<1.0"      # Ollama local / cloud (fallback)
+
+# --- config + UI ---
+pyyaml = "^6.0"            # resources.yaml / config.yaml
+streamlit = "^1.37"        # backlog UI
+
+[build-system]
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"
