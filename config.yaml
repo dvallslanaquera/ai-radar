@@ -4,22 +4,16 @@
 # =====================================================================
 
 llm:
-  # Switch backend by changing this single value: "groq" or "ollama".
-  provider: groq
+  provider: groq                  # primary; switch to "ollama" to use the fallback
 
   groq:
-    # Best free/fast option. Get a key at https://console.groq.com/keys
-    # then store it: setx GROQ_API_KEY "gsk_..."  (reopen the terminal after)
     model: llama-3.3-70b-versatile
-    api_key_env: GROQ_API_KEY
+    api_key_env: GROQ_API_KEY     # NAME of the env var holding the key (see .env)
 
   ollama:
-    # Fallback. Local default below; for Ollama Cloud use:
-    #   host: https://ollama.com
-    #   api_key_env: OLLAMA_API_KEY
-    model: qwen3:8b
-    host: http://localhost:11434
-    api_key_env: OLLAMA_API_KEY   # only needed for Ollama Cloud
+    model: gpt-oss:120b           # pick any model from your Ollama Cloud catalog
+    host: https://ollama.com
+    api_key_env: OLLAMA_API_KEY   # NAME of the env var holding the key (see .env)
 
 pipeline:
   lookback_hours: 24        # only consider items published in this window
@@ -35,5 +29,4 @@ db:
   path: radar.db
 
 http:
-  # Reddit and some sites reject requests without a real User-Agent.
   user_agent: "ai-radar/1.0 (personal research aggregator)"

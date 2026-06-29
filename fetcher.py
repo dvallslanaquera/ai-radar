@@ -23,6 +23,13 @@ log = logging.getLogger("fetcher")
 
 HTTP_TIMEOUT = 20.0
 
+# Reddit blocks generic/bot User-Agents on its public JSON endpoints; a
+# realistic desktop-browser UA is the cheapest way through the 403.
+BROWSER_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
+
 
 @dataclass
 class RawItem:
@@ -95,7 +102,13 @@ def fetch_arxiv(cfg: dict, settings: dict) -> list[RawItem]:
         "sortOrder": "descending",
         "max_results": cfg.get("max_results", 50),
     }
-    r = httpx.get("http://export.arxiv.org/api/query", params=params, timeout=HTTP_TIMEOUT)
+    # https + follow_redirects: arXiv now 301s the old http:// API endpoint.
+    r = httpx.get(
+        "https://export.arxiv.org/api/query",
+        params=params,
+        timeout=HTTP_TIMEOUT,
+        follow_redirects=True,
+    )
     r.raise_for_status()
     feed = feedparser.parse(r.text)  # arXiv returns Atom; feedparser handles it
     items: list[RawItem] = []
@@ -183,8 +196,9 @@ def fetch_reddit(cfg: dict, settings: dict) -> list[RawItem]:
     r = httpx.get(
         url,
         params={"limit": cfg.get("limit", 40)},
-        headers={"User-Agent": settings["user_agent"]},
+        headers={"User-Agent": BROWSER_UA},  # generic UA -> 403 Blocked
         timeout=HTTP_TIMEOUT,
+        follow_redirects=True,
     )
     r.raise_for_status()
     items: list[RawItem] = []

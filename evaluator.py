@@ -84,11 +84,16 @@ def make_provider(llm_cfg: dict):
         return GroqProvider(model=c["model"], api_key=os.environ.get(c["api_key_env"], ""))
     if which == "ollama":
         c = llm_cfg["ollama"]
-        return OllamaProvider(
-            model=c["model"],
-            host=c.get("host", "http://localhost:11434"),
-            api_key=os.environ.get(c.get("api_key_env", ""), "") or None,
-        )
+        host = c.get("host", "http://localhost:11434")
+        api_key = os.environ.get(c.get("api_key_env", ""), "") or None
+        # A remote host (Ollama Cloud) requires a key; without one every call
+        # 401s silently. Fail loudly up front instead of mid-batch.
+        if api_key is None and not any(h in host for h in ("localhost", "127.0.0.1")):
+            raise RuntimeError(
+                f"Ollama host {host!r} needs an API key, but env var "
+                f"{c.get('api_key_env')!r} is empty. Set it in .env."
+            )
+        return OllamaProvider(model=c["model"], host=host, api_key=api_key)
     raise ValueError(f"Unknown llm.provider: {which!r} (expected 'groq' or 'ollama')")
 
 
