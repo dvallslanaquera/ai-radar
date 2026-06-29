@@ -26,13 +26,19 @@ log = logging.getLogger("evaluator")
 # Providers
 # =====================================================================
 class GroqProvider:
-    def __init__(self, model: str, api_key: str):
+    def __init__(self, model: str, api_key: str, max_retries: int | None = None):
         from groq import Groq  # imported lazily so the other backend isn't required
 
         if not api_key:
             raise RuntimeError("GROQ API key is empty - set it in your environment.")
         self.model = model
-        self._client = Groq(api_key=api_key)
+        # max_retries=None keeps the SDK default (it backoffs on 429s). Set 0 when
+        # a fallback is configured so we fail over instantly instead of blocking
+        # on the SDK's retry/backoff loop during a rate-limit window.
+        kwargs = {"api_key": api_key}
+        if max_retries is not None:
+            kwargs["max_retries"] = max_retries
+        self._client = Groq(**kwargs)
 
     def complete(self, system: str, user: str) -> str:
         resp = self._client.chat.completions.create(
@@ -76,9 +82,45 @@ class OllamaProvider:
         return f"ollama:{self.model}"
 
 
-def make_provider(llm_cfg: dict):
-    """Build the provider selected by `llm.provider` in config.yaml."""
-    which = llm_cfg.get("provider", "groq").lower()
+def _is_rate_limit(exc) -> bool:
+    """True if exc looks like a token/rate-limit error (429 / quota / too-many-requests)."""
+    if getattr(exc, "status_code", None) == 429:
+        return True
+    if "RateLimit" in type(exc).__name__:
+        return True
+    msg = str(exc).lower()
+    return any(k in msg for k in ("rate limit", "rate_limit", "quota", "too many requests", "429"))
+
+
+class FallbackProvider:
+    """Tries the primary; on a rate/token-limit error, retries on the fallback.
+
+    Non-rate-limit errors (auth, network, malformed response) re-raise so the
+    caller can skip the item instead of silently masking a real failure.
+    """
+
+    def __init__(self, primary, fallback):
+        self.primary = primary
+        self.fallback = fallback
+
+    @property
+    def name(self) -> str:
+        return f"{self.primary.name} (fallback: {self.fallback.name})"
+
+    def complete(self, system: str, user: str) -> str:
+        try:
+            return self.primary.complete(system, user)
+        except Exception as exc:  # noqa: BLE001 - decide rate-limit vs real failure
+            if _is_rate_limit(exc):
+                log.warning("Primary %s rate-limited (%s); retrying on %s",
+                            self.primary.name, exc, self.fallback.name)
+                return self.fallback.complete(system, user)
+            raise
+
+
+def _build_single(llm_cfg: dict, which: str):
+    """Build one provider by name ('groq' or 'ollama')."""
+    which = which.lower()
     if which == "groq":
         c = llm_cfg["groq"]
         return GroqProvider(model=c["model"], api_key=os.environ.get(c["api_key_env"], ""))
@@ -95,6 +137,27 @@ def make_provider(llm_cfg: dict):
             )
         return OllamaProvider(model=c["model"], host=host, api_key=api_key)
     raise ValueError(f"Unknown llm.provider: {which!r} (expected 'groq' or 'ollama')")
+
+
+def make_provider(llm_cfg: dict):
+    """Build the provider selected by `llm.provider`, wrapped in a fallback if
+    `llm.fallback` is set. The fallback is used only when the primary returns a
+    rate/token-limit error (429), so a Groq limit mid-batch doesn't drop items.
+    """
+    primary_which = llm_cfg.get("provider", "groq").lower()
+    fb_which = llm_cfg.get("fallback")
+    if not fb_which:
+        return _build_single(llm_cfg, primary_which)
+    # Disable the Groq SDK's own 429 backoff so we fail over to the fallback
+    # instantly instead of blocking on retries during a rate-limit window.
+    if primary_which == "groq":
+        c = llm_cfg["groq"]
+        primary = GroqProvider(model=c["model"], api_key=os.environ.get(c["api_key_env"], ""), max_retries=0)
+    else:
+        primary = _build_single(llm_cfg, primary_which)
+    fallback = _build_single(llm_cfg, fb_which)
+    log.info("LLM fallback enabled: %s -> %s on rate limit", primary.name, fallback.name)
+    return FallbackProvider(primary, fallback)
 
 
 # =====================================================================

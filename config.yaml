@@ -4,16 +4,18 @@
 # =====================================================================
 
 llm:
-  provider: groq                  # primary; switch to "ollama" to use the fallback
+  provider: groq                  # primary
+  fallback: ollama                # on a Groq rate/token-limit (429), retry here
 
   groq:
     model: llama-3.3-70b-versatile
     api_key_env: GROQ_API_KEY     # NAME of the env var holding the key (see .env)
 
   ollama:
-    model: gpt-oss:120b           # pick any model from your Ollama Cloud catalog
-    host: https://ollama.com
-    api_key_env: OLLAMA_API_KEY   # NAME of the env var holding the key (see .env)
+    # Local fallback (no GPU needed; ~5 GB RAM). Pull once:  ollama pull qwen3:8b
+    model: qwen3:8b
+    host: http://localhost:11434
+    api_key_env: OLLAMA_API_KEY   # unused for local; leave the env var empty
 
 pipeline:
   lookback_hours: 24        # only consider items published in this window
