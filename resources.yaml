@@ -63,10 +63,10 @@ sources:
     listing: new          # new | hot | top
     limit: 40
 
-  - name: "r/MachineLearning"
+  - name: "r/ClaudeAI"
     type: reddit
     enabled: true
-    subreddit: MachineLearning
+    subreddit: ClaudeAI
     listing: new
     limit: 40
 
@@ -129,11 +129,288 @@ sources:
     url: "https://qiita.com/tags/機械学習/feed"
 
   # ---------------------------------------------------------------
-  # Reddit (more) - add as many as you like:
-  # - name: "r/StableDiffusion"
-  #   type: reddit
-  #   enabled: true
-  #   subreddit: StableDiffusion
-  #   listing: hot
-  #   limit: 30
+  # Reddit (more) - general AI / LLM communities
+  # NOTE: the reddit adapter currently 403s until OAuth is wired up
+  # (see fetcher.fetch_reddit). A failed source only logs a warning,
+  # so it's fine to leave these enabled.
   # ---------------------------------------------------------------
+  - name: "r/ArtificialIntelligence"
+    type: reddit
+    enabled: true
+    subreddit: ArtificialIntelligence
+    listing: new
+    limit: 40
+    # Big general-AI discussion community; latest developments.
+
+  - name: "r/PromptEngineering"
+    type: reddit
+    enabled: true
+    subreddit: PromptEngineering
+    listing: new
+    limit: 40
+    # Getting the best results from prompts; strategies for AI tools.
+
+  - name: "r/AiAssisted"
+    type: reddit
+    enabled: true
+    subreddit: AiAssisted
+    listing: new
+    limit: 40
+    # For people who actually use AI — use cases and inspiration.
+
+  - name: "r/AICuriosity"
+    type: reddit
+    enabled: true
+    subreddit: AICuriosity
+    listing: new
+    limit: 40
+    # Share and stay updated on AI tools, news, prompts; ask for help.
+
+  - name: "r/ChatGPT"
+    type: reddit
+    enabled: true
+    subreddit: ChatGPT
+    listing: new
+    limit: 40
+    # Largest ChatGPT community; prompting help and guidance.
+
+  - name: "r/ChatGPTPro"
+    type: reddit
+    enabled: true
+    subreddit: ChatGPTPro
+    listing: new
+    limit: 40
+    # Professional/advanced ChatGPT and LLM workflows, prompts, tools.
+
+  - name: "r/ChatGPTPromptGenius"
+    type: reddit
+    enabled: true
+    subreddit: ChatGPTPromptGenius
+    listing: new
+    limit: 40
+    # Teaching each other to prompt chat agents efficiently.
+
+  - name: "r/OpenAI"
+    type: reddit
+    enabled: true
+    subreddit: OpenAI
+    listing: new
+    limit: 40
+    # Discuss OpenAI tools — ChatGPT, Sora, DALL-E 3.
+
+  - name: "r/GeminiAI"
+    type: reddit
+    enabled: true
+    subreddit: GeminiAI
+    listing: new
+    limit: 40
+    # Google's Gemini LLM — inspiration and help.
+
+  - name: "r/Bard"
+    type: reddit
+    enabled: true
+    subreddit: Bard
+    listing: new
+    limit: 40
+    # Former name of Gemini; still an active discussion subreddit.
+
+  - name: "r/Anthropic"
+    type: reddit
+    enabled: true
+    subreddit: Anthropic
+    listing: new
+    limit: 40
+    # Anthropic and its Claude LLM; active community.
+
+  - name: "r/PerplexityAI"
+    type: reddit
+    enabled: true
+    subreddit: PerplexityAI
+    listing: new
+    limit: 40
+    # Perplexity AI for short-answer search and research.
+
+  - name: "r/DeepSeek"
+    type: reddit
+    enabled: true
+    subreddit: DeepSeek
+    listing: new
+    limit: 40
+    # Chinese LLM alternative; news and updates.
+
+  - name: "r/Microsoft365Copilot"
+    type: reddit
+    enabled: true
+    subreddit: Microsoft365Copilot
+    listing: new
+    limit: 40
+    # Microsoft 365 Copilot discussions and help.
+
+  - name: "r/Grok"
+    type: reddit
+    enabled: true
+    subreddit: Grok
+    listing: new
+    limit: 40
+    # xAI's Grok; news and what people build with it.
+
+  - name: "r/MistralAI"
+    type: reddit
+    enabled: true
+    subreddit: MistralAI
+    listing: new
+    limit: 40
+    # European Mistral LLM community.
+
+  - name: "r/QwenAI"
+    type: reddit
+    enabled: true
+    subreddit: QwenAI
+    listing: new
+    limit: 40
+    # Alibaba's Qwen LLM; small but active community.
+
+  - name: "r/Kimi"
+    type: reddit
+    enabled: true
+    subreddit: Kimi
+    listing: new
+    limit: 40
+    # Moonshot's Kimi chat assistant; use-cases and releases.
+
+  # ---------------------------------------------------------------
+  # Reddit (more) - automation
+  # ---------------------------------------------------------------
+  - name: "r/Automation"
+    type: reddit
+    enabled: true
+    subreddit: Automation
+    listing: new
+    limit: 40
+    # Using AI/platforms to automate tasks for work and life.
+
+  - name: "r/AI_Agents"
+    type: reddit
+    enabled: true
+    subreddit: AI_Agents
+    listing: new
+    limit: 40
+    # LLM agents that use tools / execute functions autonomously.
+
+  - name: "r/AI_Automations"
+    type: reddit
+    enabled: true
+    subreddit: AI_Automations
+    listing: new
+    limit: 40
+    # AI + work automation workflows, questions, strategies.
+
+  - name: "r/MarketingAutomation"
+    type: reddit
+    enabled: true
+    subreddit: MarketingAutomation
+    listing: new
+    limit: 40
+    # AI tools for marketing sites and products.
+
+  - name: "r/n8n"
+    type: reddit
+    enabled: true
+    subreddit: n8n
+    listing: new
+    limit: 40
+    # n8n workflow automation platform; discussion and help.
+
+  - name: "r/Zapier"
+    type: reddit
+    enabled: true
+    subreddit: Zapier
+    listing: new
+    limit: 40
+    # Zapier workflow automation across AI and non-AI tools.
+
+  # ---------------------------------------------------------------
+  # Reddit (more) - coding with AI
+  # ---------------------------------------------------------------
+  - name: "r/VibeCoding"
+    type: reddit
+    enabled: true
+    subreddit: VibeCoding
+    listing: new
+    limit: 40
+    # Largest Reddit community for coding with AI.
+
+  - name: "r/ClaudeCode"
+    type: reddit
+    enabled: true
+    subreddit: ClaudeCode
+    listing: new
+    limit: 40
+    # Using Anthropic's Claude Code to build software.
+
+  - name: "r/ChatGPTCoding"
+    type: reddit
+    enabled: true
+    subreddit: ChatGPTCoding
+    listing: new
+    limit: 40
+    # Using ChatGPT for coding; help and discussion.
+
+  - name: "r/OnlyAIcoding"
+    type: reddit
+    enabled: true
+    subreddit: OnlyAIcoding
+    listing: new
+    limit: 40
+    # Coding with AI for non-coders; strategies and prompts.
+
+  - name: "r/VibeCodeDevs"
+    type: reddit
+    enabled: true
+    subreddit: VibeCodeDevs
+    listing: new
+    limit: 40
+    # Tips, project showcases, and help for AI-coded projects.
+
+  - name: "r/Cursor"
+    type: reddit
+    enabled: true
+    subreddit: Cursor
+    listing: new
+    limit: 40
+    # Cursor AI coding platform discussions.
+
+  - name: "r/Google_antigravity"
+    type: reddit
+    enabled: true
+    subreddit: Google_antigravity
+    listing: new
+    limit: 40
+    # Google's agent-first AI IDE; discussions.
+
+  # ---------------------------------------------------------------
+  # Reddit (more) - research-focused
+  # ---------------------------------------------------------------
+  - name: "r/Artificial"
+    type: reddit
+    enabled: true
+    subreddit: Artificial
+    listing: new
+    limit: 40
+    # AI news subreddit; latest developments.
+
+  - name: "r/MachineLearning"
+    type: reddit
+    enabled: true
+    subreddit: MachineLearning
+    listing: new
+    limit: 40
+    # Long-running ML/AI research community (since 2009).
+
+  - name: "r/Singularity"
+    type: reddit
+    enabled: true
+    subreddit: Singularity
+    listing: new
+    limit: 40
+    # Advanced AI and future-shaping tech; the singularity.
