@@ -66,6 +66,10 @@ class RawItem:
     author: str = ""
     published_at: datetime | None = None
     raw_text: str = ""
+    # True for "the source says this is relevant NOW" listings (reddit hot/top):
+    # the post may be days old, so the publish-date lookback must not drop it.
+    # Dedup (content hash) still prevents analysing it twice across runs.
+    always_fresh: bool = False
 
 
 # --- date helpers -----------------------------------------------------
@@ -231,7 +235,7 @@ def fetch_reddit(cfg: dict, settings: dict) -> list[RawItem]:
         _reddit_deadline = monotonic() + budget
 
     sub = cfg["subreddit"]
-    listing = cfg.get("listing", "new")
+    listing = cfg.get("listing", "hot")
     url = f"https://www.reddit.com/r/{sub}/{listing}/.rss"
     user_agent = settings["user_agent"]
 
@@ -267,6 +271,9 @@ def fetch_reddit(cfg: dict, settings: dict) -> list[RawItem]:
                 author=e.get("author", "").removeprefix("/u/"),
                 published_at=published,
                 raw_text=e.get("summary", ""),  # post body as HTML
+                # hot/top = "relevant now" even if posted days ago; only the
+                # chronological "new" listing should obey the 24h lookback.
+                always_fresh=(listing != "new"),
             )
         )
     return items
@@ -357,6 +364,6 @@ def _within_lookback(items: list[RawItem], lookback_hours: int) -> list[RawItem]
     kept = []
     for it in items:
         # No date -> treat as fresh rather than silently dropping it.
-        if it.published_at is None or it.published_at >= cutoff:
+        if it.always_fresh or it.published_at is None or it.published_at >= cutoff:
             kept.append(it)
     return kept

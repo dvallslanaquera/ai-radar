@@ -60,14 +60,14 @@ sources:
     type: reddit
     enabled: true
     subreddit: LocalLLaMA
-    listing: new          # new | hot | top
+    listing: hot          # new | hot | top
     limit: 40
 
   - name: "r/ClaudeAI"
     type: reddit
     enabled: true
     subreddit: ClaudeAI
-    listing: new
+    listing: hot
     limit: 40
 
   # ---------------------------------------------------------------
@@ -138,7 +138,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: ArtificialIntelligence
-    listing: new
+    listing: hot
     limit: 40
     # Big general-AI discussion community; latest developments.
 
@@ -146,7 +146,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: PromptEngineering
-    listing: new
+    listing: hot
     limit: 40
     # Getting the best results from prompts; strategies for AI tools.
 
@@ -154,7 +154,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: AiAssisted
-    listing: new
+    listing: hot
     limit: 40
     # For people who actually use AI — use cases and inspiration.
 
@@ -162,7 +162,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: AICuriosity
-    listing: new
+    listing: hot
     limit: 40
     # Share and stay updated on AI tools, news, prompts; ask for help.
 
@@ -170,7 +170,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: ChatGPT
-    listing: new
+    listing: hot
     limit: 40
     # Largest ChatGPT community; prompting help and guidance.
 
@@ -178,7 +178,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: ChatGPTPro
-    listing: new
+    listing: hot
     limit: 40
     # Professional/advanced ChatGPT and LLM workflows, prompts, tools.
 
@@ -186,7 +186,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: ChatGPTPromptGenius
-    listing: new
+    listing: hot
     limit: 40
     # Teaching each other to prompt chat agents efficiently.
 
@@ -194,7 +194,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: OpenAI
-    listing: new
+    listing: hot
     limit: 40
     # Discuss OpenAI tools — ChatGPT, Sora, DALL-E 3.
 
@@ -202,7 +202,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: GeminiAI
-    listing: new
+    listing: hot
     limit: 40
     # Google's Gemini LLM — inspiration and help.
 
@@ -210,7 +210,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: Bard
-    listing: new
+    listing: hot
     limit: 40
     # Former name of Gemini; still an active discussion subreddit.
 
@@ -218,7 +218,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: Anthropic
-    listing: new
+    listing: hot
     limit: 40
     # Anthropic and its Claude LLM; active community.
 
@@ -226,7 +226,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: PerplexityAI
-    listing: new
+    listing: hot
     limit: 40
     # Perplexity AI for short-answer search and research.
 
@@ -234,7 +234,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: DeepSeek
-    listing: new
+    listing: hot
     limit: 40
     # Chinese LLM alternative; news and updates.
 
@@ -242,7 +242,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: Microsoft365Copilot
-    listing: new
+    listing: hot
     limit: 40
     # Microsoft 365 Copilot discussions and help.
 
@@ -250,7 +250,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: Grok
-    listing: new
+    listing: hot
     limit: 40
     # xAI's Grok; news and what people build with it.
 
@@ -258,7 +258,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: MistralAI
-    listing: new
+    listing: hot
     limit: 40
     # European Mistral LLM community.
 
@@ -266,7 +266,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: QwenAI
-    listing: new
+    listing: hot
     limit: 40
     # Alibaba's Qwen LLM; small but active community.
 
@@ -274,7 +274,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: Kimi
-    listing: new
+    listing: hot
     limit: 40
     # Moonshot's Kimi chat assistant; use-cases and releases.
 
@@ -285,7 +285,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: Automation
-    listing: new
+    listing: hot
     limit: 40
     # Using AI/platforms to automate tasks for work and life.
 
@@ -293,7 +293,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: AI_Agents
-    listing: new
+    listing: hot
     limit: 40
     # LLM agents that use tools / execute functions autonomously.
 
@@ -301,7 +301,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: AI_Automations
-    listing: new
+    listing: hot
     limit: 40
     # AI + work automation workflows, questions, strategies.
 
@@ -309,7 +309,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: MarketingAutomation
-    listing: new
+    listing: hot
     limit: 40
     # AI tools for marketing sites and products.
 
@@ -317,7 +317,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: n8n
-    listing: new
+    listing: hot
     limit: 40
     # n8n workflow automation platform; discussion and help.
 
@@ -325,7 +325,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: Zapier
-    listing: new
+    listing: hot
     limit: 40
     # Zapier workflow automation across AI and non-AI tools.
 
@@ -336,7 +336,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: VibeCoding
-    listing: new
+    listing: hot
     limit: 40
     # Largest Reddit community for coding with AI.
 
@@ -344,7 +344,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: ClaudeCode
-    listing: new
+    listing: hot
     limit: 40
     # Using Anthropic's Claude Code to build software.
 
@@ -352,7 +352,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: ChatGPTCoding
-    listing: new
+    listing: hot
     limit: 40
     # Using ChatGPT for coding; help and discussion.
 
@@ -360,7 +360,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: OnlyAIcoding
-    listing: new
+    listing: hot
     limit: 40
     # Coding with AI for non-coders; strategies and prompts.
 
@@ -368,7 +368,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: VibeCodeDevs
-    listing: new
+    listing: hot
     limit: 40
     # Tips, project showcases, and help for AI-coded projects.
 
@@ -376,7 +376,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: Cursor
-    listing: new
+    listing: hot
     limit: 40
     # Cursor AI coding platform discussions.
 
@@ -384,7 +384,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: Google_antigravity
-    listing: new
+    listing: hot
     limit: 40
     # Google's agent-first AI IDE; discussions.
 
@@ -395,7 +395,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: Artificial
-    listing: new
+    listing: hot
     limit: 40
     # AI news subreddit; latest developments.
 
@@ -403,7 +403,7 @@ sources:
     type: reddit
     enabled: true
     subreddit: MachineLearning
-    listing: new
+    listing: hot
     limit: 40
     # Long-running ML/AI research community (since 2009).
 
@@ -411,6 +411,6 @@ sources:
     type: reddit
     enabled: true
     subreddit: Singularity
-    listing: new
+    listing: hot
     limit: 40
     # Advanced AI and future-shaping tech; the singularity.

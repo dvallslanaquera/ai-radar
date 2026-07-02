@@ -8,22 +8,38 @@ llm:
   fallback: ollama                # on a Groq rate/token-limit (429), retry here
 
   groq:
-    model: llama-3.3-70b-versatile
     api_key_env: GROQ_API_KEY     # NAME of the env var holding the key (see .env)
+    # Groq free-tier limits are PER MODEL, so each pass runs on its own model
+    # and gets its own daily token budget (limits: console.groq.com/settings/limits):
+    #   triage - llama-3.1-8b-instant:    500K tokens/day, 6K tokens/min
+    #   eval   - llama-3.3-70b-versatile: 100K tokens/day, 12K tokens/min
+    triage_model: llama-3.1-8b-instant
+    eval_model: llama-3.3-70b-versatile
+    # Self-pacing between calls so the tokens-per-minute cap isn't hit.
+    # A ~20-item triage batch is ~2.5K tokens -> 2/min stays under 6K TPM.
+    # A deep eval is ~3K tokens -> 3/min stays under 12K TPM.
+    triage_interval_seconds: 30
+    eval_interval_seconds: 20
 
   ollama:
     # Local fallback (no GPU needed; ~5 GB RAM). Pull once:  ollama pull qwen3:8b
     model: qwen3:8b
     host: http://localhost:11434
     api_key_env: OLLAMA_API_KEY   # unused for local; leave the env var empty
+    # qwen3 "thinks" (hidden chain-of-thought) before answering - on CPU that
+    # turns a 10s call into minutes. Keep it off for scoring work.
+    think: false
 
 pipeline:
   lookback_hours: 24        # only consider items published in this window
-  triage_threshold: 50      # pass-1 score >= this -> gets a full read & summary
+                            # (reddit hot/top listings are exempt: hot = relevant now)
+  triage_threshold: 50      # pass-1 score >= this -> queued for a full read & summary
+  triage_batch_size: 20     # items scored per triage LLM call (one shared prompt)
   reject_score_cap: 25      # rejected items' score is capped to this (reads "very low")
-  max_text_chars: 8000      # truncate article text sent to the LLM (cost control)
-  request_delay_seconds: 6  # pause between LLM calls; ~10/min keeps Groq's
-                            # free-tier tokens-per-minute budget from 429-ing
+  max_text_chars: 6000      # truncate article text sent to the LLM (cost control)
+  max_deep_evals_per_run: 30  # per-run cap, best triage scores first; ~30 keeps the
+                              # 70B model inside its 100K tokens/day free budget.
+                              # The rest stays TRIAGED and is drained on later runs.
   reddit_budget_minutes: 22 # cap on Reddit's rate-limited RSS crawl; keeps the
                             # whole run under 30 min. Subs not reached in time
                             # are caught next run via dedup.

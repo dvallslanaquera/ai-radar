@@ -130,7 +130,7 @@ Four files, all plain text — edit and re-run `poetry run python main.py`:
 | `prompts/preferences.md` | Who you are and what you care about. |
 | `prompts/rubric.md` | How to score items + the read-time rules. |
 | `resources.yaml` | Your sources. Add an RSS feed in one line; toggle any source with `enabled: true/false`. |
-| `config.yaml` | LLM provider/model, the 24h window, the triage threshold. |
+| `config.yaml` | LLM models per pass, the 24h window, triage threshold/batch size, per-run deep-eval cap. |
 
 ## 🧠 Models
 
@@ -142,13 +142,21 @@ llm:
   provider: groq          # "groq" or "ollama"
 ```
 
-| Backend | Default model | Cost | Best for |
-|---|---|---|---|
-| `groq` | `llama-3.3-70b-versatile` | Free tier | **Primary** — best quality + speed for free. |
-| `ollama` | `qwen3:8b` | Free (local) | Fallback / offline / past Groq's daily limit. |
+Groq's free-tier limits are **per model**, so the two passes run on different
+models and each gets its own daily token budget:
 
-**Change the model:** edit the `model:` field under the chosen backend (e.g.
-`llama-3.1-8b-instant` on Groq, or `gemma3:12b` locally after `ollama pull`).
+| Pass | Model | Free budget | Why |
+|---|---|---|---|
+| Triage (pass 1) | `llama-3.1-8b-instant` | 500K tokens/day | Cheap relevance filter; ~20 items scored per call. |
+| Deep eval (pass 2) | `llama-3.3-70b-versatile` | 100K tokens/day | Quality summaries for the ~30 best items per run. |
+| Fallback | `qwen3:8b` (Ollama, local) | Unlimited (your CPU) | Minute-limit blips / offline; thinking disabled for speed. |
+
+**Change the models:** edit `triage_model:` / `eval_model:` under `groq:` (or
+`model:` under `ollama:`, e.g. `gemma3:12b` locally after `ollama pull`).
+When a Groq **minute** limit (TPM/RPM) hits, the run waits and retries; when a
+**daily** limit (TPD/RPD) hits, the pass stops early and the unprocessed items
+simply wait for tomorrow's fresh budget — nothing is lost, and the run never
+grinds for hours on the local CPU model.
 
 **Ollama Cloud** (bigger models, no local GPU): set `host: https://ollama.com`,
 `api_key_env: OLLAMA_API_KEY`, and `setx OLLAMA_API_KEY "..."`.
@@ -178,12 +186,12 @@ flowchart TD
     DEDUP -.-> SKIP
 
     subgraph EVAL["🧠 LLM evaluation"]
-        P1{"PASS 1 · triage()<br/>title + snippet → score"}
+        P1{"PASS 1 · triage_batch()<br/>~20 titles+snippets → scores<br/>in ONE call (8B model)"}
         REJ(["status = REJECTED<br/>kept, hidden"])
         EXTRACT["extract_text()<br/>trafilatura full body"]
-        P2["PASS 2 · evaluate()<br/>score · summary · reasons<br/>read_time · tags"]
+        P2["PASS 2 · evaluate()<br/>score · summary · reasons<br/>read_time · tags (70B model)"]
         P1 -->|"score &lt; threshold"| REJ
-        P1 -->|"score ≥ threshold"| EXTRACT --> P2
+        P1 -->|"score ≥ threshold, best first,<br/>≤ max_deep_evals_per_run"| EXTRACT --> P2
     end
 
     DB[("SQLite · radar.db<br/>WAL mode")]
@@ -239,8 +247,11 @@ Then in **Task Scheduler → Create Basic Task**:
 ## 💸 Cost
 
 Around **$0/month**. Everything runs locally; the only external call is the LLM —
-Groq's free tier, or Ollama on your own machine. Two-pass triage and text
-truncation keep token usage small.
+Groq's free tier, or Ollama on your own machine. Batched triage (one shared
+prompt per ~20 items), per-pass models (each with its own free daily budget),
+text truncation, and the per-run deep-eval cap keep every run inside the free
+tier. See [`study-notes/speed-redesign.md`](study-notes/speed-redesign.md) for
+the token-budget math.
 
 ## 💭 Contributing & feedback
 

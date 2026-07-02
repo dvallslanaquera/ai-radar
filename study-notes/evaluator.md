@@ -3,6 +3,15 @@
 Study notes on the LLM layer: the provider abstraction, the two-pass design, and
 why the JSON parsing is paranoid.
 
+> **⚠️ Partially superseded (July 2026).** The LLM layer was redesigned for
+> speed and free-tier budgets: triage is now **batched** (`triage_batch()`,
+> ~20 items per call), each pass runs on its **own Groq model** with its own
+> daily budget and self-pacing, and the fallback distinguishes minute-limits
+> (wait + retry) from daily limits (latch + stop the pass). The concepts below
+> (provider duck-typing, schemas-in-code, paranoid parsing, clamping) still
+> hold. For the redesign and the token math, read
+> [`speed-redesign.md`](speed-redesign.md).
+
 ---
 
 ## 1. The problem it solves

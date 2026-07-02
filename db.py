@@ -151,31 +151,53 @@ class Database:
         with self.Session() as s:
             return list(s.scalars(select(Item).where(Item.status == status)).all())
 
-    def items_for_deep_eval(self) -> list[Item]:
-        return self.get_by_status(TRIAGED)
+    def items_for_deep_eval(self, limit: int | None = None) -> list[Item]:
+        """TRIAGED items, best triage score first, optionally capped.
+
+        The cap keeps a single run inside the eval model's daily token budget;
+        anything past it simply stays TRIAGED and is picked up tomorrow.
+        """
+        with self.Session() as s:
+            stmt = (
+                select(Item)
+                .where(Item.status == TRIAGED)
+                .order_by(Item.score.desc(), Item.published_at.desc())
+            )
+            if limit is not None:
+                stmt = stmt.limit(limit)
+            return list(s.scalars(stmt).all())
 
     # --- pipeline writes ----------------------------------------------
-    def set_triage(
+    def set_triage_many(
         self,
-        item_id: int,
-        score: int,
+        scores: dict[int, int],
         threshold: int,
         model: str,
         reject_cap: int = 25,
-    ) -> None:
+    ) -> tuple[int, int]:
+        """Apply one triage batch in a single transaction.
+
+        Returns (passed, rejected). Items that are no longer NEW are left
+        untouched, so a re-run can never clobber a later pipeline state.
+        """
+        passed = rejected = 0
         with self.Session() as s:
-            item = s.get(Item, item_id)
-            if item is None:
-                return
-            item.model_used = model
-            if score >= threshold:
-                item.status = TRIAGED
-                item.score = int(score)
-            else:
-                # Rejected: cap to a low ceiling so it reads as clearly "very low".
-                item.status = REJECTED
-                item.score = min(int(score), reject_cap)
+            for item_id, score in scores.items():
+                item = s.get(Item, item_id)
+                if item is None or item.status != NEW:
+                    continue
+                item.model_used = model
+                if score >= threshold:
+                    item.status = TRIAGED
+                    item.score = int(score)
+                    passed += 1
+                else:
+                    # Rejected: cap to a low ceiling so it reads as clearly "very low".
+                    item.status = REJECTED
+                    item.score = min(int(score), reject_cap)
+                    rejected += 1
             s.commit()
+        return passed, rejected
 
     def set_evaluation(self, item_id: int, result: dict, model: str) -> None:
         with self.Session() as s:

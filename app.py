@@ -80,7 +80,9 @@ statuses = status_map[view]
 
 all_sources = database.distinct_sources()
 chosen_sources = st.sidebar.multiselect("Sources", all_sources, default=[])
-min_score = st.sidebar.slider("Minimum score", 0, 100, 75, step=5)
+# Default to the triage threshold so every evaluated item shows up; slide
+# right when the backlog feels crowded.
+min_score = st.sidebar.slider("Minimum score", 0, 100, 50, step=5)
 search = st.sidebar.text_input("Search title / summary")
 
 if st.sidebar.button("🔄 Refresh"):
