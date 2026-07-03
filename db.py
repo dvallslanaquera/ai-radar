@@ -24,6 +24,7 @@ from sqlalchemy import (
     String,
     Text,
     DateTime,
+    Float,
     create_engine,
     event,
     select,
@@ -84,6 +85,24 @@ class Item(Base):
     read_time_minutes: Mapped[int] = mapped_column(Integer, default=0)
     model_used: Mapped[str] = mapped_column(String(100), default="")
     evaluated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class Run(Base):
+    """One row per pipeline execution: a persistent log of how long each
+    nightly run took and what it produced. `Base.metadata.create_all` runs
+    in `Database.__init__`, so this table auto-creates on the first run that
+    touches the DB - no migration step needed."""
+
+    __tablename__ = "runs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    elapsed_seconds: Mapped[float] = mapped_column(Float, default=0.0)
+    count_new: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    count_triaged: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    count_evaluated: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    count_rejected: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="ok")
 
 
 class Database:
@@ -249,3 +268,52 @@ class Database:
         with self.Session() as s:
             rows = s.execute(select(Item.status, func.count()).group_by(Item.status)).all()
         return {status: count for status, count in rows}
+
+    # --- report (PDF digest) ------------------------------------------
+    def items_evaluated_since(self, since: datetime, min_score: int = 50) -> list[Item]:
+        """Items fully read+summarized since `since` with score >= min_score,
+        best scores first. Drives the daily PDF digest of this run's winners."""
+        with self.Session() as s:
+            stmt = (
+                select(Item)
+                .where(
+                    Item.status == EVALUATED,
+                    Item.score >= min_score,
+                    Item.evaluated_at >= since,
+                )
+                .order_by(Item.score.desc(), Item.published_at.desc())
+            )
+            return list(s.scalars(stmt).all())
+
+    # --- run history ---------------------------------------------------
+    def record_run(
+        self,
+        started_at: datetime,
+        elapsed_seconds: float,
+        counts: dict[str, int],
+        new_inserted: int,
+        status: str = "ok",
+    ) -> None:
+        """Persist one row per pipeline execution for the runtime log."""
+        with self.Session() as s:
+            s.add(
+                Run(
+                    started_at=started_at,
+                    elapsed_seconds=elapsed_seconds,
+                    count_new=new_inserted,
+                    count_triaged=counts.get(TRIAGED),
+                    count_evaluated=counts.get(EVALUATED),
+                    count_rejected=counts.get(REJECTED),
+                    status=status,
+                )
+            )
+            s.commit()
+
+    def last_run(self) -> Run | None:
+        with self.Session() as s:
+            return s.scalars(select(Run).order_by(Run.id.desc()).limit(1)).first()
+
+    def recent_runs(self, limit: int = 20) -> list[Run]:
+        with self.Session() as s:
+            stmt = select(Run).order_by(Run.id.desc()).limit(limit)
+            return list(s.scalars(stmt).all())

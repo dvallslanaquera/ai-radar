@@ -56,11 +56,41 @@ def humanize_age(dt: datetime | None) -> str:
 # --- header + metrics -------------------------------------------------
 st.title("📡 AI Radar")
 counts = database.status_counts()
-c1, c2, c3, c4 = st.columns(4)
+c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("Backlog", counts.get(dbmod.EVALUATED, 0))
 c2.metric("Read", counts.get(dbmod.READ, 0))
 c3.metric("Archived", counts.get(dbmod.ARCHIVED, 0))
 c4.metric("Rejected (low score)", counts.get(dbmod.REJECTED, 0))
+
+# Last-run runtime + a small recent-runs table (from the `runs` log).
+last = database.last_run()
+if last is not None:
+    c5.metric(
+        "Last run",
+        f"{int(last.elapsed_seconds // 60)}m {int(last.elapsed_seconds % 60):02d}s",
+        help=f"Started {humanize_age(last.started_at)} · {counts.get(dbmod.EVALUATED, 0)} in backlog",
+    )
+else:
+    c5.metric("Last run", "-")
+
+with st.expander("Recent runs", expanded=False):
+    runs = database.recent_runs(limit=15)
+    if runs:
+        rows = []
+        for r in runs:
+            rows.append(
+                {
+                    "Started": humanize_age(r.started_at),
+                    "Runtime": f"{int(r.elapsed_seconds // 60)}m {int(r.elapsed_seconds % 60):02d}s",
+                    "New": r.count_new if r.count_new is not None else "",
+                    "Triaged": r.count_triaged if r.count_triaged is not None else "",
+                    "Evaluated": r.count_evaluated if r.count_evaluated is not None else "",
+                    "Rejected": r.count_rejected if r.count_rejected is not None else "",
+                }
+            )
+        st.dataframe(rows, use_container_width=True, hide_index=True)
+    else:
+        st.caption("No runs logged yet. Run `python main.py` to start the history.")
 
 # --- sidebar filters --------------------------------------------------
 st.sidebar.header("Filters")

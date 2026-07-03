@@ -54,3 +54,18 @@ db:
 
 http:
   user_agent: "ai-radar/1.0 (personal research aggregator)"
+
+# =====================================================================
+# Daily PDF digest of the run's top-scoring articles.
+# Built at the end of main.run() and uploaded to Google Drive if enabled.
+# The PDF only ever contains items fully evaluated THIS run (evaluated_at
+# >= run start) with score >= min_score - one fresh, short digest per day.
+# =====================================================================
+report:
+  enabled: true
+  min_score: 50                 # only items at/above this go in the PDF
+  out_dir: reports               # local copy kept here (lazily created)
+  google_drive:
+    enabled: true
+    folder_id_env: GOOGLE_DRIVE_FOLDER_ID            # env var NAME (value in .env)
+    service_account_file_env: GOOGLE_SERVICE_ACCOUNT_FILE  # env var NAME -> path to JSON

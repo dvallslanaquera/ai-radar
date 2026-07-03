@@ -24,13 +24,16 @@ from __future__ import annotations
 
 import logging
 import os
+from datetime import datetime, timezone
 from pathlib import Path
+from time import monotonic
 
 import trafilatura
 import yaml
 
 import db as dbmod
 import fetcher
+import reporter
 from evaluator import Evaluator, make_provider, strip_html
 
 logging.basicConfig(
@@ -119,7 +122,22 @@ def deep_eval(database: dbmod.Database, evaluator: Evaluator, budget: int, provi
     return done
 
 
+def _fmt_elapsed(seconds: float) -> str:
+    """Human-friendly runtime: '4m 32s' or '1h 12m'."""
+    s = int(round(seconds))
+    if s < 60:
+        return f"{s}s"
+    m, s = divmod(s, 60)
+    if m < 60:
+        return f"{m}m {s:02d}s"
+    h, m = divmod(m, 60)
+    return f"{h}h {m:02d}m"
+
+
 def run() -> None:
+    run_start_mono = monotonic()
+    run_start_dt = datetime.now(timezone.utc)  # used to scope the PDF digest
+
     load_dotenv()  # pull API keys from .env into the environment first
     config = load_yaml("config.yaml")
     resources = load_yaml("resources.yaml")
@@ -135,10 +153,11 @@ def run() -> None:
     database = dbmod.Database(config["db"]["path"])
 
     # 1-3. fetch -> dedup -> store
+    t = monotonic()
     log.info("Fetching sources...")
     raw_items = fetcher.fetch_all(resources, settings, pipe["lookback_hours"])
     inserted = database.insert_items(raw_items)
-    log.info("Inserted %d new items (rest were duplicates).", inserted)
+    log.info("Inserted %d new items (rest were duplicates). (%.1fs)", inserted, monotonic() - t)
 
     # Separate providers per pass: Groq's free-tier limits are per model, so
     # triage (cheap 8B) and deep eval (70B) each get their own daily budget.
@@ -154,9 +173,12 @@ def run() -> None:
 
     # 4. deep-eval FIRST: clear as much of the TRIAGED backlog as the budget
     #    allows, so summaries land even if this run dies later.
+    t = monotonic()
     eval_budget -= deep_eval(database, evaluator, eval_budget, eval_provider)
+    log.info("Backlog deep-eval pass done. (%.1fs)", monotonic() - t)
 
     # 5. pass 1 - batched triage on every NEW item
+    t = monotonic()
     new_items = database.get_by_status(dbmod.NEW)
     log.info(
         "Pass 1 (triage): %d items in batches of %d...", len(new_items), batch_size
@@ -183,19 +205,37 @@ def run() -> None:
                 max(0, len(new_items) - start - batch_size),
             )
             break
+    log.info("Triage pass done. (%.1fs)", monotonic() - t)
 
     # 6. deep-eval today's survivors with whatever budget is left
+    t = monotonic()
     deep_eval(database, evaluator, eval_budget, eval_provider)
+    log.info("Survivor deep-eval pass done. (%.1fs)", monotonic() - t)
 
-    # 7. report
+    # 7. report + runtime log
     counts = database.status_counts()
+    elapsed = monotonic() - run_start_mono
     log.info("Done. Status counts: %s", counts)
+    log.info("Run finished in %.1fs (%s).", elapsed, _fmt_elapsed(elapsed))
     if counts.get(dbmod.TRIAGED):
         log.info(
             "%d triaged items still await a deep eval; tomorrow's run picks up "
             "the best-scored ones first (raise max_deep_evals_per_run to drain "
             "faster).", counts[dbmod.TRIAGED],
         )
+
+    # Persist this run's runtime + counts for the Streamlit "last run" view.
+    try:
+        database.record_run(run_start_dt, elapsed, counts, inserted)
+    except Exception as exc:  # noqa: BLE001 - logging must never fail the run
+        log.warning("Could not record run history: %s", exc)
+
+    # 8. PDF digest of this run's score>=50 winners -> Google Drive.
+    try:
+        reporter.maybe_generate_and_upload(database, run_start_dt, config)
+    except Exception as exc:  # noqa: BLE001 - reporting must never fail the run
+        log.warning("PDF/Drive digest step failed: %s", exc)
+
     log.info("Open the backlog with:  streamlit run app.py")
 
 
