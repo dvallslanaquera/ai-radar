@@ -290,6 +290,7 @@ TRIAGE_BATCH_SCHEMA = '{"scores": [{"id": <item id>, "score": <integer 0-100>}, 
 EVAL_SCHEMA = (
     '{"score": <integer 0-100>, '
     '"summary": "<2-3 sentence what-and-why>", '
+    '"tldr": "<one line, the key takeaway/conclusion>", '
     '"reasons": "<one line, addressed to you: why this matches your interests>", '
     '"read_time_minutes": <integer>, '
     '"tags": ["<short topic tag>", "..."]}'
@@ -306,7 +307,8 @@ TRIAGE_NOTE = (
 
 # Generous ceilings so a truncated reply never corrupts a batch; output tokens
 # count against the daily budget, so don't leave them unbounded either.
-_EVAL_MAX_TOKENS = 700
+# +50 over the old 700 covers the one-line `tldr` field added to EVAL_SCHEMA.
+_EVAL_MAX_TOKENS = 750
 
 
 def _parse_json(raw: str) -> dict:
@@ -426,6 +428,7 @@ class Evaluator:
         return {
             "score": _clamp_score(data.get("score")),
             "summary": str(data.get("summary", "")).strip(),
+            "tldr": str(data.get("tldr", "")).strip(),
             "reasons": str(data.get("reasons", "")).strip(),
             "read_time_minutes": _clamp_int(data.get("read_time_minutes"), lo=1, hi=600),
             "tags_json": json.dumps([str(t) for t in tags][:6]),

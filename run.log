@@ -1,0 +1,198 @@
+11:54:07 INFO    main | Fetching sources...
+11:54:27 WARNING fetcher |   arXiv (AI/ML/NLP)            FAILED: The read operation timed out
+11:54:28 INFO    httpx | HTTP Request: GET https://huggingface.co/api/daily_papers?limit=50 "HTTP/1.1 200 OK"
+11:54:28 INFO    fetcher |   Hugging Face Papers           50 items
+11:54:28 INFO    httpx | HTTP Request: GET https://hn.algolia.com/api/v1/search_by_date?query=AI&tags=story&numericFilters=points%3E%3D30&hitsPerPage=20 "HTTP/1.1 200 OK"
+11:54:29 INFO    httpx | HTTP Request: GET https://hn.algolia.com/api/v1/search_by_date?query=LLM&tags=story&numericFilters=points%3E%3D30&hitsPerPage=20 "HTTP/1.1 200 OK"
+11:54:30 INFO    httpx | HTTP Request: GET https://hn.algolia.com/api/v1/search_by_date?query=machine+learning&tags=story&numericFilters=points%3E%3D30&hitsPerPage=20 "HTTP/1.1 200 OK"
+11:54:30 INFO    httpx | HTTP Request: GET https://hn.algolia.com/api/v1/search_by_date?query=neural+network&tags=story&numericFilters=points%3E%3D30&hitsPerPage=20 "HTTP/1.1 200 OK"
+11:54:31 INFO    httpx | HTTP Request: GET https://hn.algolia.com/api/v1/search_by_date?query=GPT&tags=story&numericFilters=points%3E%3D30&hitsPerPage=20 "HTTP/1.1 200 OK"
+11:54:32 INFO    httpx | HTTP Request: GET https://hn.algolia.com/api/v1/search_by_date?query=open+source+model&tags=story&numericFilters=points%3E%3D30&hitsPerPage=20 "HTTP/1.1 200 OK"
+11:54:32 INFO    fetcher |   Hacker News                  120 items
+11:54:33 INFO    httpx | HTTP Request: GET https://github.com/trending?since=daily "HTTP/1.1 200 OK"
+11:54:35 INFO    httpx | HTTP Request: GET https://github.com/trending/python?since=daily "HTTP/1.1 200 OK"
+11:54:36 INFO    httpx | HTTP Request: GET https://github.com/trending/jupyter-notebook?since=weekly "HTTP/1.1 200 OK"
+11:54:37 INFO    fetcher |   GitHub Trending               50 items
+11:54:38 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/LocalLLaMA/hot/.rss "HTTP/1.1 200 OK"
+11:54:38 INFO    fetcher |   r/LocalLLaMA                  25 items
+11:55:05 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/ClaudeAI/hot/.rss "HTTP/1.1 200 OK"
+11:55:05 INFO    fetcher |   r/ClaudeAI                    25 items
+11:55:06 INFO    fetcher |   OpenAI Blog                  1028 items
+11:55:07 INFO    fetcher |   Google DeepMind Blog         100 items
+11:55:07 INFO    fetcher |   Latent Space                  20 items
+11:55:08 INFO    fetcher |   Ahead of AI (Sebastian Raschka)  20 items
+11:56:04 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/ArtificialIntelligence/hot/.rss "HTTP/1.1 404 Not Found"
+11:56:04 WARNING fetcher |   r/ArtificialIntelligence     FAILED: Client error '404 Not Found' for url 'https://www.reddit.com/r/ArtificialIntelligence/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+11:57:04 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/PromptEngineering/hot/.rss "HTTP/1.1 200 OK"
+11:57:04 INFO    fetcher |   r/PromptEngineering           25 items
+11:58:05 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/AiAssisted/hot/.rss "HTTP/1.1 200 OK"
+11:58:05 INFO    fetcher |   r/AiAssisted                  25 items
+11:59:05 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/AICuriosity/hot/.rss "HTTP/1.1 200 OK"
+11:59:05 INFO    fetcher |   r/AICuriosity                 25 items
+12:00:06 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/ChatGPT/hot/.rss "HTTP/1.1 200 OK"
+12:00:06 INFO    fetcher |   r/ChatGPT                     25 items
+12:01:06 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/ChatGPTPro/hot/.rss "HTTP/1.1 200 OK"
+12:01:06 INFO    fetcher |   r/ChatGPTPro                  25 items
+12:02:06 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/ChatGPTPromptGenius/hot/.rss "HTTP/1.1 200 OK"
+12:02:06 INFO    fetcher |   r/ChatGPTPromptGenius         25 items
+12:03:05 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/OpenAI/hot/.rss "HTTP/1.1 200 OK"
+12:03:05 INFO    fetcher |   r/OpenAI                      25 items
+12:04:05 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/GeminiAI/hot/.rss "HTTP/1.1 200 OK"
+12:04:05 INFO    fetcher |   r/GeminiAI                    25 items
+12:05:05 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/Bard/hot/.rss "HTTP/1.1 200 OK"
+12:05:05 INFO    fetcher |   r/Bard                        25 items
+12:26:04 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/Anthropic/hot/.rss "HTTP/1.1 200 OK"
+12:26:04 INFO    fetcher |   r/Anthropic                   25 items
+12:26:05 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/PerplexityAI/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:05 WARNING fetcher |   r/PerplexityAI               FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/PerplexityAI/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:06 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/DeepSeek/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:06 WARNING fetcher |   r/DeepSeek                   FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/DeepSeek/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:07 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/Microsoft365Copilot/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:07 WARNING fetcher |   r/Microsoft365Copilot        FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/Microsoft365Copilot/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:07 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/Grok/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:07 WARNING fetcher |   r/Grok                       FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/Grok/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:08 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/MistralAI/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:08 WARNING fetcher |   r/MistralAI                  FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/MistralAI/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:08 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/QwenAI/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:08 WARNING fetcher |   r/QwenAI                     FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/QwenAI/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:08 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/Kimi/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:08 WARNING fetcher |   r/Kimi                       FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/Kimi/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:09 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/Automation/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:09 WARNING fetcher |   r/Automation                 FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/Automation/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:09 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/AI_Agents/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:09 WARNING fetcher |   r/AI_Agents                  FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/AI_Agents/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:10 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/AI_Automations/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:10 WARNING fetcher |   r/AI_Automations             FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/AI_Automations/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:11 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/MarketingAutomation/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:11 WARNING fetcher |   r/MarketingAutomation        FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/MarketingAutomation/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:11 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/n8n/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:11 WARNING fetcher |   r/n8n                        FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/n8n/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:11 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/Zapier/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:11 WARNING fetcher |   r/Zapier                     FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/Zapier/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:12 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/VibeCoding/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:12 WARNING fetcher |   r/VibeCoding                 FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/VibeCoding/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:12 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/ClaudeCode/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:12 WARNING fetcher |   r/ClaudeCode                 FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/ClaudeCode/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:13 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/ChatGPTCoding/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:13 WARNING fetcher |   r/ChatGPTCoding              FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/ChatGPTCoding/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:13 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/OnlyAIcoding/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:13 WARNING fetcher |   r/OnlyAIcoding               FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/OnlyAIcoding/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:14 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/VibeCodeDevs/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:14 WARNING fetcher |   r/VibeCodeDevs               FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/VibeCodeDevs/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:14 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/Cursor/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:14 WARNING fetcher |   r/Cursor                     FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/Cursor/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:15 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/Google_antigravity/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:15 WARNING fetcher |   r/Google_antigravity         FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/Google_antigravity/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:16 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/Artificial/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:16 WARNING fetcher |   r/Artificial                 FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/Artificial/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:16 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/MachineLearning/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:16 WARNING fetcher |   r/MachineLearning            FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/MachineLearning/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:17 INFO    httpx | HTTP Request: GET https://www.reddit.com/r/Singularity/hot/.rss "HTTP/1.1 429 Too Many Requests"
+12:26:17 WARNING fetcher |   r/Singularity                FAILED: Client error '429 Too Many Requests' for url 'https://www.reddit.com/r/Singularity/hot/.rss'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+12:26:17 INFO    fetcher | Fetched 1688 items, 387 within last 24h
+12:26:17 INFO    main | Inserted 136 new items (rest were duplicates). (1930.1s)
+12:26:18 INFO    evaluator | LLM triage pass: groq:llama-3.1-8b-instant -> ollama:qwen3:8b on rate limit
+12:26:18 INFO    evaluator | LLM eval pass: groq:llama-3.3-70b-versatile -> ollama:qwen3:8b on rate limit
+12:26:19 INFO    main | Deep eval: 30 items (highest triage scores first)...
+12:26:22 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:26:22 WARNING trafilatura.core | discarding data: None
+12:26:43 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:26:43 WARNING trafilatura.core | discarding data: None
+12:27:04 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:27:04 WARNING trafilatura.core | discarding data: None
+12:27:25 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:27:25 WARNING trafilatura.core | discarding data: None
+12:27:46 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:27:46 WARNING trafilatura.core | discarding data: None
+12:28:07 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:28:07 WARNING trafilatura.core | discarding data: None
+12:28:28 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:28:49 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:29:10 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:29:30 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:29:31 WARNING trafilatura.core | discarding data: None
+12:29:51 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:29:52 WARNING trafilatura.core | discarding data: None
+12:30:12 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:30:13 WARNING trafilatura.core | discarding data: None
+12:30:33 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:30:34 WARNING trafilatura.core | discarding data: None
+12:30:55 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:30:55 WARNING trafilatura.core | discarding data: None
+12:31:16 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:31:16 WARNING trafilatura.core | discarding data: None
+12:31:37 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:31:58 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:31:58 WARNING trafilatura.core | discarding data: None
+12:32:19 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:32:19 WARNING trafilatura.core | discarding data: None
+12:32:40 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:32:40 WARNING trafilatura.core | discarding data: None
+12:33:01 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:33:01 WARNING trafilatura.core | discarding data: None
+12:33:22 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:33:22 WARNING trafilatura.core | discarding data: None
+12:33:43 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:33:43 WARNING trafilatura.core | discarding data: None
+12:34:04 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:34:04 WARNING trafilatura.core | discarding data: None
+12:34:25 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:34:25 WARNING trafilatura.core | discarding data: None
+12:34:46 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:34:46 WARNING trafilatura.core | discarding data: None
+12:35:07 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:35:08 WARNING trafilatura.core | discarding data: None
+12:35:28 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+12:35:28 WARNING evaluator | groq:llama-3.3-70b-versatile hit its DAILY limit; using ollama:qwen3:8b for the rest of the run
+12:36:35 INFO    httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+12:36:35 WARNING main | Eval model's daily budget is spent; stopping the deep-eval pass (27 done). The rest stays TRIAGED for tomorrow's fresh budget.
+12:36:35 INFO    main | Backlog deep-eval pass done. (616.3s)
+12:36:35 INFO    main | Pass 1 (triage): 136 items in batches of 20...
+12:36:36 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:36:36 INFO    main |   batch 1-20: 15 passed, 5 rejected
+12:37:07 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:37:07 INFO    main |   batch 21-40: 15 passed, 5 rejected
+12:37:38 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:37:38 INFO    main |   batch 41-60: 8 passed, 12 rejected
+12:38:09 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:38:09 INFO    main |   batch 61-80: 13 passed, 7 rejected
+12:38:39 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+12:38:39 INFO    evaluator | groq:llama-3.1-8b-instant minute-limited; waiting 1s then retrying
+12:39:10 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:39:10 INFO    main |   batch 81-100: 0 passed, 20 rejected
+12:39:40 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:39:40 INFO    main |   batch 101-120: 1 passed, 19 rejected
+12:40:12 INFO    httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+12:40:12 INFO    main |   batch 121-136: 1 passed, 15 rejected
+12:40:12 INFO    main | Triage pass done. (217.1s)
+12:40:12 INFO    main | Survivor deep-eval pass done. (0.0s)
+12:40:12 INFO    main | Done. Status counts: {'EVALUATED': 43, 'REJECTED': 729, 'TRIAGED': 474}
+12:40:12 INFO    main | Run finished in 2765.4s (46m 05s).
+12:40:12 INFO    main | 474 triaged items still await a deep eval; tomorrow's run picks up the best-scored ones first (raise max_deep_evals_per_run to drain faster).
+12:40:12 INFO    reporter | Wrote digest PDF: reports\ai-radar-2026-07-03.pdf (26 item(s)).
+12:40:12 WARNING reporter | Drive upload enabled but GOOGLE_DRIVE_FOLDER_ID / GOOGLE_SERVICE_ACCOUNT_FILE not set; leaving the PDF local only.
+12:40:12 INFO    main | Open the backlog with:  streamlit run app.py

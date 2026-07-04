@@ -150,6 +150,8 @@ for item in items:
             st.caption(meta)
             if item.reasons:
                 st.markdown(f"*Why:* {item.reasons}")
+            if item.tldr:
+                st.markdown(f"**TL;DR:** {item.tldr}")
             if item.summary:
                 st.write(item.summary)
             tagline = " ".join(f"`{t}`" for t in tags)

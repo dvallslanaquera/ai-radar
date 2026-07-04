@@ -80,6 +80,7 @@ class Item(Base):
     # evaluation results
     score: Mapped[int] = mapped_column(Integer, default=0, index=True)
     summary: Mapped[str] = mapped_column(Text, default="")
+    tldr: Mapped[str] = mapped_column(Text, default="")
     reasons: Mapped[str] = mapped_column(Text, default="")
     tags: Mapped[str] = mapped_column(Text, default="[]")  # JSON array
     read_time_minutes: Mapped[int] = mapped_column(Integer, default=0)
@@ -120,7 +121,20 @@ class Database:
             cur.close()
 
         Base.metadata.create_all(self.engine)
+        self._migrate()
         self.Session = sessionmaker(self.engine, expire_on_commit=False, future=True)
+
+    def _migrate(self) -> None:
+        """Add columns introduced after a DB was first created.
+
+        `create_all` only creates missing tables, never alters existing ones,
+        so a lightweight column check keeps old radar.db files working without
+        a full migration framework.
+        """
+        with self.engine.begin() as conn:
+            cols = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(items)").fetchall()}
+            if "tldr" not in cols:
+                conn.exec_driver_sql("ALTER TABLE items ADD COLUMN tldr TEXT DEFAULT ''")
 
     # --- ingestion ----------------------------------------------------
     def insert_items(self, raw_items) -> int:
@@ -225,6 +239,7 @@ class Database:
                 return
             item.score = int(result.get("score", item.score))
             item.summary = result.get("summary", "")
+            item.tldr = result.get("tldr", "")
             item.reasons = result.get("reasons", "")
             item.tags = result.get("tags_json", "[]")
             item.read_time_minutes = int(result.get("read_time_minutes", 0) or 0)

@@ -146,6 +146,12 @@ def build_report_pdf(items: list[dbmod.Item], out_path: Path) -> Path:
         pdf.multi_cell(0, 5, ascii_safe(meta))
         pdf.set_text_color(0)
 
+        # TL;DR (bottom-line conclusion, ahead of the fuller summary)
+        if item.tldr:
+            pdf.ln(1)
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.multi_cell(0, 5.5, ascii_safe(f"TL;DR: {item.tldr}"))
+
         # Summary
         if item.summary:
             pdf.ln(1)

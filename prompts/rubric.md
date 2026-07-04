@@ -35,6 +35,13 @@ preferences. Judge the *content itself*, not how popular it is.
 - If it's a paper, mention the core contribution. If it's a release, mention
   what's new and notable.
 
+## TL;DR instructions (used only for items that pass triage)
+- Write ONE short sentence: the key takeaway or conclusion, not a restatement
+  of the topic. If it's a paper, the main result/finding. If it's a release,
+  the headline capability or number. If it's a write-up, the lesson learned.
+- This is distinct from the summary above: the summary describes what the
+  piece covers, the `tldr` states its bottom line.
+
 ## Estimated read time
 - Also estimate how long it would take you to read/absorb the item, in **whole
   minutes** (`read_time_minutes`).

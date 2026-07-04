@@ -115,6 +115,19 @@ sources:
   #   url: "https://importai.substack.com/feed"
 
   # ---------------------------------------------------------------
+  # Medium - RSS (medium.com/feed/<publication-or-tag>)
+  # ---------------------------------------------------------------
+  - name: "Towards Data Science"
+    type: rss
+    enabled: true
+    url: "https://towardsdatascience.com/feed"
+
+  - name: "Medium (Artificial Intelligence tag)"
+    type: rss
+    enabled: true
+    url: "https://medium.com/feed/tag/artificial-intelligence"
+
+  # ---------------------------------------------------------------
   # Zenn / Qiita - RSS (Japanese dev communities). Topic feeds keep
   # the volume down; confirm the topic slugs match what you want.
   # ---------------------------------------------------------------
@@ -406,6 +419,17 @@ sources:
     listing: hot
     limit: 40
     # Long-running ML/AI research community (since 2009).
+
+  - name: "r/MachineLearningPapers"
+    type: reddit
+    enabled: true
+    subreddit: MachineLearningPapers
+    listing: hot
+    limit: 40
+    # Paper-focused spinoff of r/MachineLearning; existence/activity unverified
+    # (couldn't confirm via web search - reddit's own listing page needs
+    # auth to check). Harmless to leave enabled since a dead/empty subreddit
+    # only logs a warning, per the reddit adapter's existing 403 behavior.
 
   - name: "r/Singularity"
     type: reddit
