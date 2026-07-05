@@ -272,15 +272,34 @@ step is best-effort: a PDF or upload failure logs a warning and the run is still
 considered successful — reporting must never break the nightly job.
 
 **Google Drive upload (optional).** Enable it under `report.google_drive` in
-`config.yaml` and the PDF is pushed to a Drive folder you share with a service
-account (one-time setup, no OAuth consent screen — the service account touches
-only that folder):
+`config.yaml`. The default `method: oauth` works with a personal Gmail: you
+authorize once in a browser, and every run after that uploads (and refreshes the
+token) silently — the scheduled job never blocks on a prompt. Uploaded files are
+owned by *you* and count against your normal Drive storage. One-time setup:
+
+1. **Google Cloud Console** → create a project → **enable the Google Drive API**.
+2. **OAuth consent screen** (External). Add yourself as a test user, or set it to
+   *In production* so the refresh token doesn't expire every 7 days. The
+   `drive.file` scope is non-sensitive, so no app verification is needed.
+3. **Credentials → Create OAuth client ID → Desktop app** → download the JSON.
+4. In **Drive**, create/pick a folder; copy its id from the URL
+   (`drive.google.com/drive/folders/<THIS_ID>`).
+5. Fill in `.env`, then run the one-time authorizer:
 
 ```powershell
-copy .env.example .env    # then add (paths/IDs you created in Drive / Google Cloud):
-# GOOGLE_DRIVE_FOLDER_ID=your_shared_folder_id
-# GOOGLE_SERVICE_ACCOUNT_FILE=C:\path\to\service-account.json
+copy .env.example .env    # then set:
+# GOOGLE_OAUTH_CLIENT_FILE=C:\path\to\client_secret.json
+# GOOGLE_OAUTH_TOKEN_FILE=C:\path\to\drive_token.json   # created by the next step
+# GOOGLE_DRIVE_FOLDER_ID=your_folder_id
+
+poetry install                          # pulls in google-auth-oauthlib
+poetry run python authorize_drive.py    # opens a browser once, writes the token
 ```
+
+After that, `poetry run python main.py` uploads each day's digest automatically. (Prefer a
+service account on Google Workspace? Set `method: service_account` and supply
+`GOOGLE_SERVICE_ACCOUNT_FILE` — see `.env.example`. This path needs a Shared
+Drive; on a personal Gmail it fails with a storage-quota error.)
 
 | `config.yaml` key | What it controls |
 |---|---|
@@ -288,8 +307,10 @@ copy .env.example .env    # then add (paths/IDs you created in Drive / Google Cl
 | `report.min_score` | Score cutoff for inclusion (default 50). |
 | `report.out_dir` | Where the local PDF copy is kept. |
 | `report.google_drive.enabled` | Toggle Drive upload (off → PDF stays local only). |
+| `report.google_drive.method` | `oauth` (personal Gmail) or `service_account` (Workspace). |
 | `report.google_drive.folder_id_env` | Name of the env var holding the Drive folder ID. |
-| `report.google_drive.service_account_file_env` | Name of the env var holding the service-account JSON path. |
+| `report.google_drive.oauth_token_file_env` | Env var holding the saved OAuth token path. |
+| `report.google_drive.service_account_file_env` | Env var holding the service-account JSON path. |
 
 ## 💸 Cost
 
