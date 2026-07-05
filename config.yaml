@@ -67,5 +67,10 @@ report:
   out_dir: reports               # local copy kept here (lazily created)
   google_drive:
     enabled: true
+    method: oauth                 # "oauth" (personal Gmail) or "service_account" (Workspace)
     folder_id_env: GOOGLE_DRIVE_FOLDER_ID            # env var NAME (value in .env)
+    # OAuth (personal Gmail): authorize once via `python authorize_drive.py`,
+    # which writes the token file. main.py then uploads + refreshes silently.
+    oauth_token_file_env: GOOGLE_OAUTH_TOKEN_FILE    # env var NAME -> path to saved token JSON
+    # Service account (Google Workspace + Shared Drive only):
     service_account_file_env: GOOGLE_SERVICE_ACCOUNT_FILE  # env var NAME -> path to JSON

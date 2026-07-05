@@ -198,11 +198,81 @@ def build_report_pdf(items: list[dbmod.Item], out_path: Path) -> Path:
     return out_path
 
 
-def upload_to_drive(pdf_path: Path, folder_id: str, service_account_file: str) -> str | None:
-    """Upload `pdf_path` into the Drive `folder_id` using a service account.
-    Returns the new file id, or None if anything went wrong (logs a warning)."""
+def _load_user_credentials(token_file: str):
+    """Load saved OAuth *user* credentials, refreshing (and re-saving) them
+    silently when expired. Returns a Credentials object, or None if there's no
+    usable token yet.
+
+    This never opens a browser: the one-time consent that creates the token
+    lives in `authorize_drive.py`, so the nightly scheduled run can't block on
+    a browser prompt. Once refreshed here, the new token is written back so the
+    next run starts from a fresh access token.
+    """
+    try:
+        from google.oauth2.credentials import Credentials  # type: ignore
+        from google.auth.transport.requests import Request  # type: ignore
+    except ImportError as exc:
+        log.warning("Drive upload skipped - google libs not installed (%s).", exc)
+        return None
+
+    token_path = Path(token_file)
+    if not token_path.exists():
+        log.warning(
+            "Drive OAuth token not found at %s - run `python authorize_drive.py` "
+            "once to authorize. Leaving the PDF local only.", token_file,
+        )
+        return None
+
+    try:
+        creds = Credentials.from_authorized_user_file(token_file, [_DRIVE_SCOPE])
+    except (ValueError, json.JSONDecodeError) as exc:
+        log.warning(
+            "Drive OAuth token at %s is malformed (%s) - re-run "
+            "`python authorize_drive.py`. Leaving the PDF local only.",
+            token_file, exc,
+        )
+        return None
+    if creds and creds.valid:
+        return creds
+    if creds and creds.expired and creds.refresh_token:
+        try:
+            creds.refresh(Request())
+            token_path.write_text(creds.to_json(), encoding="utf-8")
+            return creds
+        except Exception as exc:  # noqa: BLE001 - a bad refresh must never fail the run
+            log.warning(
+                "Drive OAuth token refresh failed (%s) - re-run "
+                "`python authorize_drive.py`. Leaving the PDF local only.", exc,
+            )
+            return None
+    log.warning(
+        "Drive OAuth token at %s is unusable (no refresh token) - re-run "
+        "`python authorize_drive.py`. Leaving the PDF local only.", token_file,
+    )
+    return None
+
+
+def _load_service_account_credentials(service_account_file: str):
+    """Load a service-account credential (Workspace / Shared Drive setups).
+    Returns a Credentials object, or None on failure."""
     try:
         from google.oauth2 import service_account  # type: ignore
+    except ImportError as exc:
+        log.warning("Drive upload skipped - google libs not installed (%s).", exc)
+        return None
+    try:
+        return service_account.Credentials.from_service_account_file(
+            service_account_file, scopes=[_DRIVE_SCOPE]
+        )
+    except Exception as exc:  # noqa: BLE001 - upload must never fail the run
+        log.warning("Could not load service account file %s: %s", service_account_file, exc)
+        return None
+
+
+def upload_to_drive(pdf_path: Path, folder_id: str, creds) -> str | None:
+    """Upload `pdf_path` into the Drive `folder_id` with the given credentials.
+    Returns the new file id, or None if anything went wrong (logs a warning)."""
+    try:
         from googleapiclient.discovery import build  # type: ignore
         from googleapiclient.http import MediaFileUpload  # type: ignore
     except ImportError as exc:
@@ -210,9 +280,6 @@ def upload_to_drive(pdf_path: Path, folder_id: str, service_account_file: str) -
         return None
 
     try:
-        creds = service_account.Credentials.from_service_account_file(
-            service_account_file, scopes=[_DRIVE_SCOPE]
-        )
         service = build("drive", "v3", credentials=creds, cache_discovery=False)
         media = MediaFileUpload(str(pdf_path), mimetype="application/pdf")
         created = (
@@ -260,15 +327,42 @@ def maybe_generate_and_upload(database: dbmod.Database, run_start_dt: datetime, 
     if not drive_cfg.get("enabled", False):
         return
 
-    folder_id = os.environ.get(drive_cfg.get("folder_id_env", "GOOGLE_DRIVE_FOLDER_ID"), "").strip()
-    sa_file = os.environ.get(
-        drive_cfg.get("service_account_file_env", "GOOGLE_SERVICE_ACCOUNT_FILE"), ""
+    folder_id = os.environ.get(
+        drive_cfg.get("folder_id_env", "GOOGLE_DRIVE_FOLDER_ID"), ""
     ).strip()
-    if not folder_id or not sa_file:
+    if not folder_id:
         log.warning(
-            "Drive upload enabled but GOOGLE_DRIVE_FOLDER_ID / GOOGLE_SERVICE_ACCOUNT_FILE not set; "
+            "Drive upload enabled but GOOGLE_DRIVE_FOLDER_ID not set; "
             "leaving the PDF local only."
         )
         return
 
-    upload_to_drive(pdf_path, folder_id, sa_file)
+    # method: "oauth" (personal Gmail, default) or "service_account" (Workspace).
+    method = (drive_cfg.get("method") or "oauth").strip().lower()
+    if method == "service_account":
+        sa_file = os.environ.get(
+            drive_cfg.get("service_account_file_env", "GOOGLE_SERVICE_ACCOUNT_FILE"),
+            "",
+        ).strip()
+        if not sa_file:
+            log.warning(
+                "Drive method=service_account but GOOGLE_SERVICE_ACCOUNT_FILE "
+                "not set; leaving the PDF local only."
+            )
+            return
+        creds = _load_service_account_credentials(sa_file)
+    else:
+        token_file = os.environ.get(
+            drive_cfg.get("oauth_token_file_env", "GOOGLE_OAUTH_TOKEN_FILE"), ""
+        ).strip()
+        if not token_file:
+            log.warning(
+                "Drive method=oauth but GOOGLE_OAUTH_TOKEN_FILE not set; "
+                "leaving the PDF local only."
+            )
+            return
+        creds = _load_user_credentials(token_file)
+
+    if creds is None:
+        return  # helper already logged why; PDF stays local
+    upload_to_drive(pdf_path, folder_id, creds)
