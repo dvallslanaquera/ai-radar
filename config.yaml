@@ -56,14 +56,17 @@ http:
   user_agent: "ai-radar/1.0 (personal research aggregator)"
 
 # =====================================================================
-# Daily PDF digest of the run's top-scoring articles.
-# Built at the end of main.run() and uploaded to Google Drive if enabled.
-# The PDF only ever contains items fully evaluated THIS run (evaluated_at
-# >= run start) with score >= min_score - one fresh, short digest per day.
+# Weekly PDF digest of the last `window_days` of top-scoring articles.
+# Built by `python main.py --digest` (scheduled every Friday 17:00 by cron /
+# Task Scheduler) and uploaded to Google Drive if enabled. It aggregates
+# every daily run's winners over the trailing window (evaluated_at within
+# [now - window_days, now)) with score >= min_score - one digest per week,
+# not a single-run snapshot.
 # =====================================================================
 report:
   enabled: true
   min_score: 50                 # only items at/above this go in the PDF
+  window_days: 7                # trailing days the weekly digest covers
   out_dir: reports               # local copy kept here (lazily created)
   google_drive:
     enabled: true

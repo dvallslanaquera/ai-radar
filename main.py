@@ -1,10 +1,19 @@
 """AI Radar - nightly orchestrator.
 
-Run once (Windows Task Scheduler triggers it at 7am):
+Two entry points:
 
-    python main.py
+    python main.py           # daily 7am pipeline: fetch -> triage -> deep-eval
+    python main.py --digest  # weekly Friday 5pm PDF digest of the last 7 days
 
-Pipeline:
+The daily `main.py` run does NOT build a PDF anymore - it just keeps the
+backlog fed so sources stay fresh and the Groq per-day token budgets spread
+across the week. The PDF digest is a separate, weekly job (`--digest`) that
+aggregates every daily run's score>=min_score winners over the trailing week
+into one PDF and uploads it to Google Drive if configured. The 5pm-Friday
+cadence is enforced by the external scheduler (cron / Task Scheduler), not
+by the app - see README "Schedule it" + "Weekly PDF digest".
+
+Pipeline (daily run):
     1. load config, sources, and your two prompt files
     2. fetch every enabled source, normalize, keep last 24h
     3. insert into SQLite, skipping anything already seen (dedup)
@@ -22,6 +31,7 @@ inside its free-tier daily token budget; the rest waits for tomorrow.
 
 from __future__ import annotations
 
+import argparse
 import logging
 import os
 from datetime import datetime, timezone
@@ -136,7 +146,7 @@ def _fmt_elapsed(seconds: float) -> str:
 
 def run() -> None:
     run_start_mono = monotonic()
-    run_start_dt = datetime.now(timezone.utc)  # used to scope the PDF digest
+    run_start_dt = datetime.now(timezone.utc)  # timestamped in the run-history log
 
     load_dotenv()  # pull API keys from .env into the environment first
     config = load_yaml("config.yaml")
@@ -230,14 +240,37 @@ def run() -> None:
     except Exception as exc:  # noqa: BLE001 - logging must never fail the run
         log.warning("Could not record run history: %s", exc)
 
-    # 8. PDF digest of this run's score>=50 winners -> Google Drive.
-    try:
-        reporter.maybe_generate_and_upload(database, run_start_dt, config)
-    except Exception as exc:  # noqa: BLE001 - reporting must never fail the run
-        log.warning("PDF/Drive digest step failed: %s", exc)
-
     log.info("Open the backlog with:  streamlit run app.py")
+    log.info("Weekly PDF digest:  python main.py --digest  (Friday 5pm, scheduled)")
+
+
+def run_weekly_digest() -> None:
+    """Build + upload the weekly PDF digest (last 7 days of score>=min_score
+    winners). This is the `python main.py --digest` entry point, scheduled
+    every Friday 17:00 by cron / Task Scheduler. Best-effort: a failure logs
+    a warning and returns without raising."""
+    load_dotenv()
+    config = load_yaml("config.yaml")
+    database = dbmod.Database(config["db"]["path"])
+
+    log.info("Building weekly PDF digest...")
+    t = monotonic()
+    try:
+        reporter.generate_weekly_digest(database, config)
+    except Exception as exc:  # noqa: BLE001 - the digest must never raise
+        log.warning("Weekly digest step failed: %s", exc)
+    log.info("Weekly digest done. (%.1fs)", monotonic() - t)
 
 
 if __name__ == "__main__":
-    run()
+    parser = argparse.ArgumentParser(description="AI Radar orchestrator.")
+    parser.add_argument(
+        "--digest",
+        action="store_true",
+        help="build + upload the weekly PDF digest instead of running the daily pipeline",
+    )
+    args = parser.parse_args()
+    if args.digest:
+        run_weekly_digest()
+    else:
+        run()

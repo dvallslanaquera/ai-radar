@@ -30,7 +30,7 @@ ollama = ">=0.3,<1.0"      # Ollama local / cloud (fallback)
 pyyaml = "^6.0"            # resources.yaml / config.yaml
 streamlit = "^1.37"        # backlog UI
 
-# --- reporting (daily PDF digest -> Google Drive) ---
+# --- reporting (weekly PDF digest -> Google Drive) ---
 fpdf2 = "^2.7"                          # PDF generation (pure Python, no system deps)
 google-api-python-client = ">=2.120,<3.0"  # Drive v3 API client
 google-auth = ">=2.28,<3.0"             # OAuth user + service-account creds

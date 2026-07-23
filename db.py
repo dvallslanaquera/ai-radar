@@ -285,16 +285,22 @@ class Database:
         return {status: count for status, count in rows}
 
     # --- report (PDF digest) ------------------------------------------
-    def items_evaluated_since(self, since: datetime, min_score: int = 50) -> list[Item]:
-        """Items fully read+summarized since `since` with score >= min_score,
-        best scores first. Drives the daily PDF digest of this run's winners."""
+    def items_evaluated_between(
+        self, start: datetime, end: datetime, min_score: int = 50
+    ) -> list[Item]:
+        """Items fully read+summarized in the half-open window [start, end)
+        with score >= min_score, best scores first. Drives the weekly PDF
+        digest: aggregates every daily run's winners over the last 7 days
+        instead of a single run's snapshot. `start`/`end` should be tz-aware
+        UTC to match how `evaluated_at` is stored."""
         with self.Session() as s:
             stmt = (
                 select(Item)
                 .where(
                     Item.status == EVALUATED,
                     Item.score >= min_score,
-                    Item.evaluated_at >= since,
+                    Item.evaluated_at >= start,
+                    Item.evaluated_at < end,
                 )
                 .order_by(Item.score.desc(), Item.published_at.desc())
             )

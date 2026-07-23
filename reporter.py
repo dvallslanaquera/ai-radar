@@ -1,8 +1,11 @@
-"""Daily PDF digest of the run's top-scoring articles, optionally uploaded
-to Google Drive.
+"""Weekly PDF digest of the last 7 days' top-scoring articles, optionally
+uploaded to Google Drive.
 
-Called at the end of `main.run()` *after* the status report, so a crash
-earlier in the run still leaves the already-evaluated winners available.
+Built by `main.run_weekly_digest()` (entry point: `python main.py --digest`),
+which the external scheduler triggers every Friday at 17:00. It aggregates
+every daily run's score>=min_score winners over the trailing week via
+`Database.items_evaluated_between`, so one PDF covers Mon-Fri instead of a
+single run's snapshot. The daily `main.run()` no longer builds a PDF.
 
 Design notes:
 - PDF library: fpdf2 (pure Python, no system deps). Its built-in fonts
@@ -13,8 +16,8 @@ Design notes:
   account (one-time setup; see the plan / README). The service account
   touches only that folder, so no OAuth consent-screen flow is needed.
 - Everything is best-effort: a PDF or Drive failure logs a warning and the
-  pipeline run is still considered successful. A digest artifact must never
-  break the nightly job.
+  digest step is still considered successful. A digest artifact must never
+  break the weekly job.
 """
 
 from __future__ import annotations
@@ -23,7 +26,7 @@ import json
 import logging
 import os
 import unicodedata
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from fpdf import FPDF
@@ -105,24 +108,31 @@ class _DigestPDF(FPDF):
         self.set_text_color(0)
 
 
-def build_report_pdf(items: list[dbmod.Item], out_path: Path) -> Path:
+def build_report_pdf(
+    items: list[dbmod.Item],
+    out_path: Path,
+    *,
+    title: str = "AI Radar - weekly digest",
+    subtitle: str | None = None,
+) -> Path:
     """Render `items` (already filtered to score >= min_score) into a PDF at
-    `out_path`. Returns the written path."""
+    `out_path`. `title` and `subtitle` drive the header block. Returns the
+    written path."""
     pdf = _DigestPDF()
     pdf.add_page()
 
     # --- header -------------------------------------------------------
     pdf.set_font("Helvetica", "B", 20)
     pdf.set_text_color(20)
-    pdf.cell(0, 12, "AI Radar - daily digest", ln=True)
+    pdf.cell(0, 12, ascii_safe(title), ln=True)
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(90)
-    pdf.cell(
-        0,
-        6,
-        ascii_safe(f"{datetime.now(timezone.utc).astimezone().strftime('%A, %Y-%m-%d')}  -  {len(items)} article(s) scoring >= 50"),
-        ln=True,
-    )
+    if subtitle is None:
+        subtitle = (
+            f"{datetime.now(timezone.utc).astimezone().strftime('%A, %Y-%m-%d')}"
+            f"  -  {len(items)} article(s)"
+        )
+    pdf.cell(0, 6, ascii_safe(subtitle), ln=True)
     pdf.ln(4)
     pdf.set_draw_color(210)
     pdf.line(18, pdf.get_y(), pdf.epw + 18, pdf.get_y())
@@ -299,30 +309,55 @@ def upload_to_drive(pdf_path: Path, folder_id: str, creds) -> str | None:
         return None
 
 
-def maybe_generate_and_upload(database: dbmod.Database, run_start_dt: datetime, config: dict) -> None:
-    """End-of-run orchestrator. Pulls this run's >= min_score winners, writes
-    a local PDF, and uploads it to Drive if configured. Best-effort."""
+def generate_weekly_digest(database: dbmod.Database, config: dict) -> None:
+    """Build (and optionally upload) the weekly PDF digest: every item fully
+    evaluated in the last `window_days` (default 7) with score >= min_score,
+    best scores first. Best-effort - a PDF or Drive failure logs a warning and
+    returns without raising. Intended to be called by `main.run_weekly_digest()`
+    (`python main.py --digest`), which the scheduler triggers every Friday 17:00."""
     report_cfg = config.get("report") or {}
     if not report_cfg.get("enabled", True):
         return
 
     min_score = int(report_cfg.get("min_score", 50))
-    items = database.items_evaluated_since(run_start_dt, min_score=min_score)
+    window_days = int(report_cfg.get("window_days", 7))
+
+    # Window in UTC to match how `evaluated_at` is stored; half-open [start, end)
+    # so adjacent weekly windows don't double-count an item on the boundary.
+    end_utc = datetime.now(timezone.utc)
+    start_utc = end_utc - timedelta(days=window_days)
+    items = database.items_evaluated_between(start_utc, end_utc, min_score=min_score)
     if not items:
-        log.info("No items scored >= %d this run; skipping PDF digest.", min_score)
+        log.info(
+            "No items scored >= %d in the last %d days; skipping weekly PDF digest.",
+            min_score, window_days,
+        )
         return
 
+    # Local-time equivalents for the filename and the human-readable header.
+    end_local = end_utc.astimezone()
+    start_local = start_utc.astimezone()
     out_dir = Path(report_cfg.get("out_dir", "reports"))
-    stamp = datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d")
-    pdf_path = out_dir / f"ai-radar-{stamp}.pdf"
+    pdf_path = out_dir / f"ai-radar-weekly-{end_local.strftime('%Y-%m-%d')}.pdf"
+    subtitle = (
+        f"{start_local.strftime('%Y-%m-%d')} to {end_local.strftime('%Y-%m-%d')}"
+        f"  -  {len(items)} article(s) scoring >= {min_score}"
+    )
 
     try:
-        build_report_pdf(items, pdf_path)
-        log.info("Wrote digest PDF: %s (%d item(s)).", pdf_path, len(items))
-    except Exception as exc:  # noqa: BLE001 - PDF build must never fail the run
-        log.warning("Failed to build digest PDF: %s", exc)
+        build_report_pdf(items, pdf_path, title="AI Radar - weekly digest", subtitle=subtitle)
+        log.info("Wrote weekly digest PDF: %s (%d item(s)).", pdf_path, len(items))
+    except Exception as exc:  # noqa: BLE001 - PDF build must never fail the job
+        log.warning("Failed to build weekly digest PDF: %s", exc)
         return
 
+    _upload_pdf_if_configured(pdf_path, report_cfg)
+
+
+def _upload_pdf_if_configured(pdf_path: Path, report_cfg: dict) -> None:
+    """Drive upload tail shared by the digest builder. Reads `report_cfg`
+    (the `report` block), loads the right credential type, and uploads.
+    Best-effort: logs and returns on any misconfiguration or failure."""
     drive_cfg = report_cfg.get("google_drive") or {}
     if not drive_cfg.get("enabled", False):
         return

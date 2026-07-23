@@ -1,4 +1,4 @@
-"""One-time Google Drive authorization for the daily PDF digest.
+"""One-time Google Drive authorization for the weekly PDF digest.
 
 Run this ONCE, on a machine with a browser:
 

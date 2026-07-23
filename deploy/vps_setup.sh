@@ -3,7 +3,8 @@
 #
 # Run this ON the VPS (paste into the Lightsail browser SSH terminal, or via
 # a regular `ssh` session) AFTER the instance is created. It installs Python
-# tooling, clones this public repo, and installs the daily cron job.
+# tooling, clones this public repo, and installs two cron jobs: a daily 7am
+# pipeline run and a weekly Friday-5pm PDF digest (`main.py --digest`).
 #
 # It does NOT copy secrets (.env, radar.db, drive_token.json) - those never
 # go through git. Copy them separately with scp from your machine, and edit
@@ -40,9 +41,13 @@ cd "$APP_DIR"
 echo "==> poetry install"
 poetry install
 
-CRON_LINE="0 7 * * * cd $APP_DIR && poetry run python main.py >> run.log 2>&1"
-echo "==> Installing daily cron job (7am $TIMEZONE): $CRON_LINE"
-( crontab -l 2>/dev/null | grep -vF "$APP_DIR/main.py" ; echo "$CRON_LINE" ) | crontab -
+CRON_DAILY="0 7 * * * cd $APP_DIR && poetry run python main.py >> run.log 2>&1"
+CRON_WEEKLY="0 17 * * 5 cd $APP_DIR && poetry run python main.py --digest >> digest.log 2>&1"
+echo "==> Installing cron jobs ($TIMEZONE):"
+echo "    daily  7am  pipeline : $CRON_DAILY"
+echo "    weekly Fri 5pm digest : $CRON_WEEKLY"
+# Replace any existing ai-radar entries with this pair (idempotent).
+( crontab -l 2>/dev/null | grep -vF "$APP_DIR/main.py" ; echo "$CRON_DAILY" ; echo "$CRON_WEEKLY" ) | crontab -
 
 cat <<'EOF'
 
@@ -52,5 +57,7 @@ cat <<'EOF'
     2. Edit ~/ai-radar/config.yaml:
          llm.ollama.host  -> https://ollama.com
          llm.ollama.model -> gpt-oss:20b-cloud   (qwen3:8b is local-only)
-    3. Test once by hand:  cd ~/ai-radar && poetry run python main.py
+    3. Test once by hand:
+         cd ~/ai-radar && poetry run python main.py          # daily pipeline
+         cd ~/ai-radar && poetry run python main.py --digest  # weekly PDF
 EOF
